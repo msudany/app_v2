@@ -1,0 +1,52 @@
+{% extends "layout.html" %} {% block title %}{{ user.display_name }}'s Profile{% endblock %} {% block content %}
+
+        <section class="user-details">
+            <img src="{{ user.profile_pic or '/static/images/default_profile.png' }}" alt="{{ user.display_name }}'s Picture">
+            <p><strong>{{ user.display_name }}</strong></p>
+            <p><strong>Bio:</strong> {{ user.bio }}</p>
+            <p><strong>Location:</strong> {{ user.location }}</p>
+            <p><strong>Followers:</strong> {{ user.followers.count() }}</p>
+            <p><strong>Following:</strong> {{ user.followed.count() }}</p>
+            {% if user.id != current_user.id %}
+            <form action="{{ url_for('follow_user' if not is_following else 'unfollow_user', user_id=user.id) }}" method="POST">
+                <button type="submit" class="btn">
+                    {% if not is_following %}Follow{% else %}Unfollow{% endif %}
+                </button>
+            </form>
+            {% endif %}
+        </section>
+
+        <section class="followed-categories">
+            <h2>Followed Categories</h2>
+            {% if followed_categories %}
+            <ul>
+                {% for category in followed_categories %}
+                <li>{{ category.name }}</li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>This user is not following any categories.</p>
+            {% endif %}
+        </section>
+
+        <section class="user-library">
+            <h2>{{ user.display_name }}'s Library</h2>
+            <div class="library-grid">
+                {% for entry in library %}
+                <div class="library-item">
+                    <img src="{{ entry.book.cover_image }}" alt="{{ entry.book.title }} Cover">
+                    <h3><a href="{{ url_for('book_details', book_id=entry.book.id) }}">{{ entry.book.title }}</a></h3>
+                    <p>Pages read: {{ entry.pages_read }} / {{ entry.book.pages }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="profile-actions">
+            <h2>Actions</h2>
+            <form action="{{ url_for('logout') }}" method="POST">
+                <button type="submit" class="btn logout">Logout</button>
+            </form>
+        </section>
+
+{% endblock content %}

@@ -1,0 +1,37 @@
+{% extends "layout.html" %} {% block title %}{{ author.name }}{% endblock %} {% block content %}
+
+        <section class="author-details">
+            <img src="{{ author.profile_pic or '/static/images/default_author.png' }}" alt="{{ author.name }}">
+            <p>{{ author.bio or "No bio available." }}</p>
+            <form action="{{ url_for('follow_author', author_id=author.id) }}" method="POST">
+                {% if is_following %}
+                    <button type="submit" class="btn unfollow">Unfollow</button>
+                {% else %}
+                    <button type="submit" class="btn follow">Follow</button>
+                {% endif %}
+            </form>
+        </section>
+
+        <section class="author-books">
+            <h2>Books by {{ author.name }}</h2>
+            <div class="book-grid">
+                {% for book in books %}
+                    <div class="book-item">
+                        <img src="{{ book.cover_image or '/static/images/default_cover.png' }}" alt="{{ book.title }} Cover">
+                        <h3><a href="{{ url_for('book_details', book_id=book.id) }}">{{ book.title }}</a></h3>
+                        <p>Rating: {{ book.rating }}/5</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="author-categories">
+            <h2>Popular Categories</h2>
+            <ul>
+                {% for category, count in popular_categories %}
+                    <li>{{ category }} ({{ count }} books)</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+{% endblock content %}

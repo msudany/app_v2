@@ -1,0 +1,40 @@
+{% extends "layout.html" %} {% block title %}My Profile{% endblock %} {% block content %}
+
+        <form action="{{ url_for('profile') }}" method="POST" enctype="multipart/form-data">
+            <div class="profile-pic">
+                <img src="{{ current_user.profile_pic }}" alt="Profile Picture">
+                <label for="profile_pic">Change Picture:</label>
+                <input type="file" id="profile_pic" name="profile_pic">
+            </div>
+
+            <label for="display_name">Display Name:</label>
+            <input type="text" id="display_name" name="display_name" value="{{ current_user.display_name }}">
+
+            <label for="bio">Bio:</label>
+            <textarea id="bio" name="bio">{{ current_user.bio }}</textarea>
+
+            <label for="gender">Gender:</label>
+            <select id="gender" name="gender">
+                <option value="Male" {% if current_user.gender == 'Male' %}selected{% endif %}>Male</option>
+                <option value="Female" {% if current_user.gender == 'Female' %}selected{% endif %}>Female</option>
+            </select>
+
+            <label for="age">Age:</label>
+            <input type="number" id="age" name="age" value="{{ current_user.age }}">
+
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location" value="{{ current_user.location }}">
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ current_user.email }}">
+
+            <label for="password">Change Password:</label>
+            <input type="password" id="password" name="password">
+
+            <button type="submit">Update Profile</button>
+        </form>
+        <form action="{{ url_for('logout') }}" onsubmit="return confirm('Are you sure you want to log out?')">
+            <button type="submit" class="btn logout">Logout</button>
+        </form>
+
+{% endblock content %}

@@ -1,0 +1,34 @@
+{% extends "layout.html" %} {% block title %}Categories{% endblock %} {% block content %}
+
+        <section class="categories">
+            {% for category in categories %}
+            <h3>{{ category.name }}</h3>
+            <form action="{{ url_for('follow_category', category_id=category.id) }}" method="POST">
+                {% if category in followed_categories %}
+                    <button type="submit" class="btn unfollow">Unfollow</button>
+                {% else %}
+                    <button type="submit" class="btn follow">Follow</button>
+                {% endif %}
+            </form>
+            <div class="category-item" id="category-{{ category.id }}">
+                {% if category.books %}
+                <ul class="book-list">
+                    {% for book in category.books %}
+                    <li>
+                        <div class="book-item">
+                            <img src="{{ book.cover_image or '/static/images/default_cover.png' }}" alt="{{ book.title }} Cover">
+                            <h3><a href="{{ url_for('book_details', book_id=book.id) }}">{{ book.title }}</a></h3>
+                            <p><strong>Author:</strong> {{ book.author }}</p>
+                            <p><strong>Rating:</strong> {{ book.rating }}/5</p>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No books available for this category.</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </section>
+
+{% endblock content %}

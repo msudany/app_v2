@@ -1,0 +1,85 @@
+{% extends "layout.html" %} {% block title %}{{ book.title }}{% endblock %} {% block content %}
+        <section class="book-details">
+            <div class="book-cover">
+                <img src="{{ book.cover_image or '/static/images/default_cover.png' }}" alt="{{ book.title }} Cover">
+            </div>
+            <div class="book-info">
+                <h2>{{ book.title }}</h2>
+                <p><strong>Author:</strong> {{ book.author }}</p>
+                <p><strong>Categories:</strong>
+                    {% for category in book.categories %}
+                        {{ category.name }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </p>
+                <p><strong>Pages:</strong> {{ book.pages }}</p>
+                <p><strong>Rating:</strong> {{ book.rating }}/5</p>
+                <p><strong>Summary:</strong></p>
+                <p>{{ book.summary }}</p>
+            </div>
+        </section>
+
+        <section class="reviews">
+            <h2>Reviews</h2>
+            {% if reviews %}
+                <ul class="review-list">
+                    {% for review in reviews %}
+                        <li class="review-item">
+                            <div class="review-header">
+                                <p><strong>Reviewer:</strong> {{ review.user_display_name }}</p>
+                                <p><strong>Rating:</strong> {{ review.rating }}/5</p>
+                            </div>
+                            <p>{{ review.content }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="no-reviews">No reviews yet. Be the first to review!</p>
+            {% endif %}
+        </section>
+
+        {% if current_user.is_authenticated and not user_review %}
+        <section class="add-review">
+            <h2>Add a Review</h2>
+            <form action="{{ url_for('review', book_id=book.id) }}" method="POST">
+                <label for="rating">Rating (1-5):</label>
+                <input type="number" id="rating" name="rating" min="1" max="5" required>
+
+                <label for="content">Your Review:</label>
+                <textarea id="content" name="content" rows="4" required></textarea>
+
+                <button type="submit" class="btn">Submit Review</button>
+            </form>
+        </section>
+        {% elif user_review %}
+        <section class="edit-review">
+            <h2>Edit Your Review</h2>
+            <form action="{{ url_for('review', book_id=book.id) }}" method="POST">
+                <label for="rating">Rating (1-5):</label>
+                <input type="number" id="rating" name="rating" min="1" max="5" value="{{ user_review.rating }}" required>
+
+                <label for="content">Your Review:</label>
+                <textarea id="content" name="content" rows="4" required>{{ user_review.content }}</textarea>
+
+                <button type="submit" class="btn">Update Review</button>
+            </form>
+        </section>
+        {% endif %}
+
+        {% if current_user.is_authenticated and not already_in_library %}
+        <section class="add-library">
+            <h2>Add to Library</h2>
+            <form action="{{ url_for('add_to_library', book_id=book.id) }}" method="POST">
+                <label for="status">Mark as:</label>
+                <select id="status" name="status" required>
+                    <option value="Currently Reading">Currently Reading</option>
+                    <option value="Want to Read">Want to Read</option>
+                    <option value="Read">Read</option>
+                </select>
+                <button type="submit" class="btn">Add</button>
+            </form>
+        </section>
+        {% elif already_in_library %}
+        <p class="already-in-library">This book is already in your library. <a href="{{ url_for('library') }}">Go to my library?</a></p>
+        {% endif %}
+
+{% endblock content %}

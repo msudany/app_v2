@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Home{% endblock %}</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="/static/main.js" defer></script>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <!-- App Logo -->
+                <a href="{{ url_for('home') }}" class="logo">📚 BookApp</a>
+
+                <!-- Nav Links -->
+                <ul class="nav-links">
+                    <li class="{% if request.endpoint == 'home' %}active{% endif %}"><a href="{{ url_for('home') }}">Home</a></li>
+                    <li class="{% if request.endpoint == 'categories' %}active{% endif %}"><a href="{{ url_for('categories') }}">Categories</a></li>
+                    <li class="{% if request.endpoint == 'browse' %}active{% endif %}"><a href="{{ url_for('browse') }}">Browse</a></li>
+                    <li class="{% if request.endpoint == 'library' %}active{% endif %}"><a href="{{ url_for('library') }}">My Library</a></li>
+                    <li class="{% if request.endpoint == 'profile' %}active{% endif %}"><a href="{{ url_for('profile') }}">Profile</a></li>
+                </ul>
+
+                <!-- Search Bar -->
+                <form action="{{ url_for('search') }}" method="GET" class="search-form">
+                    <input type="text" name="q" placeholder="Search..." required>
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+        </nav>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flashes">
+              {% for category, message in messages %}
+                <div class="flash-message {{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

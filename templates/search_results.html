@@ -1,0 +1,95 @@
+{% extends "layout.html" %} {% block title %}Results for "{{ query }}"{% endblock %} {% block content %}
+
+        <h2>Results for "{{ query }}"</h2>
+
+        <!-- Filters -->
+        <section class="filters">
+            <h3>Filters</h3>
+            <form action="{{ url_for('search') }}" method="GET" class="filter-form">
+                <input type="hidden" name="q" value="{{ query }}">
+
+                <!-- Pages Filter -->
+                <label for="min_pages">Min Pages:</label>
+                <input type="number" name="min_pages" id="min_pages" value="{{ request.args.get('min_pages') }}">
+                <label for="max_pages">Max Pages:</label>
+                <input type="number" name="max_pages" id="max_pages" value="{{ request.args.get('max_pages') }}">
+
+                <!-- Category Filter -->
+                <label for="category">Category:</label>
+                <select name="category" id="category">
+                    <option value="">All</option>
+                    {% for category in all_categories %}
+                        <option value="{{ category.id }}" {% if request.args.get('category') == category.id|string %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <!-- Rating Filter -->
+                <label for="rating">Rating:</label>
+                <select name="rating" id="rating">
+                    <option value="">All</option>
+                    {% for r in [1, 2, 3, 4] %}
+                        <option value="{{ r }}" {% if request.args.get('rating') == r|string %}selected{% endif %}>{{ r }}+</option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit" class="btn">Apply Filters</button>
+            </form>
+        </section>
+
+        <!-- Results -->
+        <section class="results">
+            <h3>Books</h3>
+            {% if books %}
+                <ul>
+                    {% for book in books %}
+                        <li>
+                            <strong><a href="{{ url_for('book_details', book_id=book.id) }}">{{ book.title }}</a></strong> by {{ book.author }}
+                            <p>Rating: {{ book.rating }}</p>
+                            <p>Categories:
+                                {% for category in book.categories %}
+                                    <a href="{{ url_for('categories') }}#category-{{ category.id }}">{{ category.name }}</a>{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No books found.</p>
+            {% endif %}
+
+            <h3>Authors</h3>
+            {% if authors %}
+                <ul>
+                    {% for author in authors %}
+                        <li><a href="{{ url_for('search', q=author.author) }}">{{ author.author }}</a></li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No authors found.</p>
+            {% endif %}
+
+            <h3>Categories</h3>
+            {% if categories %}
+                <ul>
+                    {% for category in categories %}
+                        <li><a href="{{ url_for('categories') }}#category-{{ category.id }}">{{ category.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No categories found.</p>
+            {% endif %}
+
+            <h3>Users</h3>
+            {% if users %}
+                <ul>
+                    {% for user in users %}
+                        <li><a href="{{ url_for('profile', user_id=user.id) }}">{{ user.display_name }}</a></li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No users found.</p>
+            {% endif %}
+        </section>
+{% endblock content %}
