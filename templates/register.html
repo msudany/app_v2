@@ -1,24 +1,79 @@
-{% extends "layout.html" %} {% block title %}Registration{% endblock %} {% block content %}
+{% extends "layout.html" %}
 
-        <form action="{{ url_for('register') }}" method="POST">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
+{% block title %}Registration{% endblock %}
 
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="text-center mb-4">Create an Account</h1>
+            <!-- Registration Form -->
+            <form action="{{ url_for('register') }}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <!-- Username -->
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username:</label>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="Enter your username" required>
+                </div>
 
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
+                <!-- Email -->
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email:</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
+                </div>
 
-            <button type="submit">Register</button>
-        </form>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <ul>
-                    {% for category, message in messages %}
-                        <li class="{{ category }}">{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
+                <!-- Password -->
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password:</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
+                </div>
+
+                <!-- Display Name -->
+                <div class="mb-3">
+                    <label for="display_name" class="form-label">Display Name (Optional):</label>
+                    <input type="text" id="display_name" name="display_name" class="form-control" placeholder="Enter your display name">
+                </div>
+
+                <!-- Bio -->
+                <div class="mb-3">
+                    <label for="bio" class="form-label">Bio (Optional):</label>
+                    <textarea id="bio" name="bio" rows="3" class="form-control" placeholder="Tell us something about yourself"></textarea>
+                </div>
+
+                <!-- Gender -->
+                <div class="mb-3">
+                    <label for="gender" class="form-label">Gender (Optional):</label>
+                    <select id="gender" name="gender" class="form-select">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+
+                <!-- Age -->
+                <div class="mb-3">
+                    <label for="age" class="form-label">Age (Optional):</label>
+                    <input type="number" id="age" name="age" class="form-control" min="0" placeholder="Enter your age">
+                </div>
+
+                <!-- Location -->
+                <div class="mb-3">
+                    <label for="location" class="form-label">Location (Optional):</label>
+                    <input type="text" id="location" name="location" class="form-control" placeholder="Enter your location">
+                </div>
+
+                <!-- Profile Picture -->
+                <div class="mb-3">
+                    <label for="profile_pic" class="form-label">Profile Picture (Optional):</label>
+                    <input type="file" id="profile_pic" name="profile_pic" class="form-control" accept="image/*">
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Register</button>
+                </div>
+            </form>
+            <!-- Already Have Account -->
+            <p class="text-center mt-4">Already have an account? <a href="{{ url_for('login') }}" class="text-decoration-none">Login here</a>.</p>
+        </div>
+    </div>
+</div>
 {% endblock content %}

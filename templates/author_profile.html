@@ -1,37 +1,56 @@
-{% extends "layout.html" %} {% block title %}{{ author.name }}{% endblock %} {% block content %}
+{% extends "layout.html" %}
 
-        <section class="author-details">
-            <img src="{{ author.profile_pic or '/static/images/default_author.png' }}" alt="{{ author.name }}">
-            <p>{{ author.bio or "No bio available." }}</p>
-            <form action="{{ url_for('follow_author', author_id=author.id) }}" method="POST">
-                {% if is_following %}
-                    <button type="submit" class="btn unfollow">Unfollow</button>
-                {% else %}
-                    <button type="submit" class="btn follow">Follow</button>
-                {% endif %}
-            </form>
-        </section>
+{% block title %}{{ author.name }}{% endblock %}
 
-        <section class="author-books">
-            <h2>Books by {{ author.name }}</h2>
-            <div class="book-grid">
-                {% for book in books %}
-                    <div class="book-item">
-                        <img src="{{ book.cover_image or '/static/images/default_cover.png' }}" alt="{{ book.title }} Cover">
-                        <h3><a href="{{ url_for('book_details', book_id=book.id) }}">{{ book.title }}</a></h3>
-                        <p>Rating: {{ book.rating }}/5</p>
-                    </div>
-                {% endfor %}
+{% block content %}
+    <section class="author-details container my-4">
+        <div class="row align-items-center">
+            <!-- Author Image -->
+            <div class="col-md-3 text-center">
+                <img src="{{ author.profile_pic or '/static/images/default_author.png' }}" alt="{{ author.name }}" class="rounded-circle img-fluid" style="max-width: 150px;">
             </div>
-        </section>
+            <!-- Author Bio and Follow Button -->
+            <div class="col-md-9">
+                <p class="text-muted">{{ author.bio or "No bio available." }}</p>
+                <form action="{{ url_for('follow_author', author_id=author.id) }}" method="POST">
+                    {% if is_following %}
+                        <button type="submit" class="btn btn-outline-secondary">Unfollow</button>
+                    {% else %}
+                        <button type="submit" class="btn btn-primary">Follow</button>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </section>
 
-        <section class="author-categories">
-            <h2>Popular Categories</h2>
-            <ul>
-                {% for category, count in popular_categories %}
-                    <li>{{ category }} ({{ count }} books)</li>
-                {% endfor %}
-            </ul>
-        </section>
+    <section class="author-books container my-5">
+        <h2 class="mb-4">Books by {{ author.name }}</h2>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for book in books %}
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="{{ book.cover_image or '/static/images/default_cover.png' }}" alt="{{ book.title }} Cover" class="card-img-top">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{{ url_for('book_details', book_id=book.id) }}" class="text-decoration-none">{{ book.title }}</a>
+                            </h5>
+                            <p class="card-text">Rating: {{ book.rating }}/5</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
 
+    <section class="author-categories container my-5">
+        <h2>Popular Categories</h2>
+        <ul class="list-group list-group-flush">
+            {% for category, count in popular_categories %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ category }}
+                    <span class="badge bg-primary rounded-pill">{{ count }} books</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
 {% endblock content %}

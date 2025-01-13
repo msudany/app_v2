@@ -353,9 +353,3 @@ def follow_category(category_id):
 @app.route('/browse')
 def browse():
     return render_template('home.html')
-
-@app.route('/authors')
-def authors():
-    authors = Author.query.all()  # Ensure this retrieves authors
-    print(authors)
-    return render_template('authors.html', authors=authors)

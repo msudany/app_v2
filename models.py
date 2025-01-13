@@ -1,3 +1,5 @@
+from email.policy import default
+
 from extensions import db
 from flask_login import UserMixin
 

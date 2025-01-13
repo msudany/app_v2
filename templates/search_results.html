@@ -1,22 +1,31 @@
-{% extends "layout.html" %} {% block title %}Results for "{{ query }}"{% endblock %} {% block content %}
+{% extends "layout.html" %}
 
-        <h2>Results for "{{ query }}"</h2>
+{% block title %}Results for "{{ query }}"{% endblock %}
 
-        <!-- Filters -->
-        <section class="filters">
-            <h3>Filters</h3>
-            <form action="{{ url_for('search') }}" method="GET" class="filter-form">
-                <input type="hidden" name="q" value="{{ query }}">
+{% block content %}
+<div class="container my-5">
+    <h2 class="text-center mb-4">Results for "{{ query }}"</h2>
 
-                <!-- Pages Filter -->
-                <label for="min_pages">Min Pages:</label>
-                <input type="number" name="min_pages" id="min_pages" value="{{ request.args.get('min_pages') }}">
-                <label for="max_pages">Max Pages:</label>
-                <input type="number" name="max_pages" id="max_pages" value="{{ request.args.get('max_pages') }}">
+    <!-- Filters Section -->
+    <section class="filters mb-5">
+        <h3 class="mb-3">Filters</h3>
+        <form action="{{ url_for('search') }}" method="GET" class="row gy-3">
+            <input type="hidden" name="q" value="{{ query }}">
 
-                <!-- Category Filter -->
-                <label for="category">Category:</label>
-                <select name="category" id="category">
+            <!-- Pages Filter -->
+            <div class="col-md-3">
+                <label for="min_pages" class="form-label">Min Pages:</label>
+                <input type="number" name="min_pages" id="min_pages" class="form-control" value="{{ request.args.get('min_pages') }}">
+            </div>
+            <div class="col-md-3">
+                <label for="max_pages" class="form-label">Max Pages:</label>
+                <input type="number" name="max_pages" id="max_pages" class="form-control" value="{{ request.args.get('max_pages') }}">
+            </div>
+
+            <!-- Category Filter -->
+            <div class="col-md-3">
+                <label for="category" class="form-label">Category:</label>
+                <select name="category" id="category" class="form-select">
                     <option value="">All</option>
                     {% for category in all_categories %}
                         <option value="{{ category.id }}" {% if request.args.get('category') == category.id|string %}selected{% endif %}>
@@ -24,72 +33,99 @@
                         </option>
                     {% endfor %}
                 </select>
+            </div>
 
-                <!-- Rating Filter -->
-                <label for="rating">Rating:</label>
-                <select name="rating" id="rating">
+            <!-- Rating Filter -->
+            <div class="col-md-3">
+                <label for="rating" class="form-label">Rating:</label>
+                <select name="rating" id="rating" class="form-select">
                     <option value="">All</option>
                     {% for r in [1, 2, 3, 4] %}
                         <option value="{{ r }}" {% if request.args.get('rating') == r|string %}selected{% endif %}>{{ r }}+</option>
                     {% endfor %}
                 </select>
+            </div>
 
-                <button type="submit" class="btn">Apply Filters</button>
-            </form>
-        </section>
+            <!-- Submit Button -->
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+            </div>
+        </form>
+    </section>
 
-        <!-- Results -->
-        <section class="results">
-            <h3>Books</h3>
-            {% if books %}
-                <ul>
-                    {% for book in books %}
-                        <li>
-                            <strong><a href="{{ url_for('book_details', book_id=book.id) }}">{{ book.title }}</a></strong> by {{ book.author.name }}
-                            <p>Rating: {{ book.rating }}</p>
-                            <p>Categories:
+    <!-- Results Section -->
+    <section class="results">
+        <!-- Books -->
+        <h3 class="mb-3">Books</h3>
+        {% if books %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for book in books %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{{ url_for('book_details', book_id=book.id) }}" class="text-decoration-none"><img class="card-img-top" src="{{ book.cover_image }}" alt="{{ book.title }}"/></a>
+                            </h5>
+                            <p class="card-text text-muted">{{ book.author.name }}</p>
+                            <p class="card-text">
+                                Rating: {{ book.rating }}
+                            </p>
+                            <p class="card-text">
+                                Categories:
                                 {% for category in book.categories %}
-                                    <a href="{{ url_for('categories') }}#category-{{ category.id }}">{{ category.name }}</a>{% if not loop.last %}, {% endif %}
+                                    <a href="{{ url_for('categories') }}#category-{{ category.id }}" class="badge bg-primary text-decoration-none">{{ category.name }}</a>
                                 {% endfor %}
                             </p>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>No books found.</p>
-            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">No books found.</p>
+        {% endif %}
 
-            <h3>Authors</h3>
-            {% if authors %}
-                <ul>
-                    {% for author in authors %}
-                        <li><a href="{{ url_for('author_profile', author_id=author.id) }}">{{ author.name }}</a></li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>No authors found.</p>
-            {% endif %}
+        <!-- Authors -->
+        <h3 class="mt-5 mb-3">Authors</h3>
+        {% if authors %}
+            <ul class="list-group">
+                {% for author in authors %}
+                    <li class="list-group-item">
+                        <a href="{{ url_for('author_profile', author_id=author.id) }}" class="text-decoration-none">{{ author.name }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">No authors found.</p>
+        {% endif %}
 
-            <h3>Categories</h3>
-            {% if categories %}
-                <ul>
-                    {% for category in categories %}
-                        <li><a href="{{ url_for('categories') }}#category-{{ category.id }}">{{ category.name }}</a></li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>No categories found.</p>
-            {% endif %}
+        <!-- Categories -->
+        <h3 class="mt-5 mb-3">Categories</h3>
+        {% if categories %}
+            <ul class="list-group">
+                {% for category in categories %}
+                    <li class="list-group-item">
+                        <a href="{{ url_for('categories') }}#category-{{ category.id }}" class="text-decoration-none">{{ category.name }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">No categories found.</p>
+        {% endif %}
 
-            <h3>Users</h3>
-            {% if users %}
-                <ul>
-                    {% for user in users %}
-                        <li><a href="{{ url_for('profile', user_id=user.id) }}">{{ user.display_name }}</a></li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>No users found.</p>
-            {% endif %}
-        </section>
+        <!-- Users -->
+        <h3 class="mt-5 mb-3">Users</h3>
+        {% if users %}
+            <ul class="list-group">
+                {% for user in users %}
+                    <li class="list-group-item">
+                        <a href="{{ url_for('view_user', user_id=user.id) }}" class="text-decoration-none">{{ user.display_name }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">No users found.</p>
+        {% endif %}
+    </section>
+</div>
 {% endblock content %}

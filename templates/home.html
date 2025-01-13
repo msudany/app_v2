@@ -1,38 +1,59 @@
-{% extends "layout.html" %} {% block title %}Home{% endblock %} {% block content %}
-        <section>
-            <h2>All Books</h2>
-            <div class="book-grid">
-                {% for book in books %}
-                <div class="book-tile">
-                    <img src="{{ book.cover_image }}" alt="{{ book.title }} Cover">
-                    <h3><a href="{{ url_for('book_details', book_id=book.id) }}">{{ book.title }}</a></h3>
-                    <p>{{ book.author.name }}</p>
-                    <p>
-                        {% for category in book.categories %}
-                            {{ category.name }}{% if not loop.last %}, {% endif %}
-                        {% endfor %}
-                    </p>
-                </div>
-                {% endfor %}
-            </div>
-        </section>
+{% extends "layout.html" %}
 
-        {% if current_user.is_authenticated %}
-        <section>
-            <h2>Recommended for You</h2>
-            {% if recommendations %}
-                <ul>
-                    {% for book in recommendations %}
-                        <li>
-                            <h3><a href="{{ url_for('book_details', book_id=book.id) }}">{{ book.title }}</a></h3>
-                            <p>{{ book.author.name }}</p>
-                            <p>{{ book.category.name }}</p>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>No recommendations available. Start following categories or authors to see personalized suggestions!</p>
-            {% endif %}
-        </section>
+{% block title %}Home{% endblock %}
+
+{% block content %}
+    <!-- All Books Section -->
+    <section class="all-books container my-5">
+        <h2 class="text-center mb-4">All Books</h2>
+        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+            {% for book in books %}
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <img src="{{ book.cover_image or '/static/images/default_cover.png' }}" class="card-img-top" alt="{{ book.title }} Cover">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{{ url_for('book_details', book_id=book.id) }}" class="text-decoration-none">{{ book.title }}</a>
+                        </h5>
+                        <a href="{{ url_for('author_profile', author_id=book.author.id) }}" class="text-decoration-none">{{ book.author.name }}</a>
+                        <p class="card-text">
+                            {% for category in book.categories %}
+                                <span class="badge bg-primary">{{ category.name }}</span>
+                            {% endfor %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Recommended Books Section -->
+    {% if current_user.is_authenticated %}
+    <section class="recommended-books container my-5">
+        <h2 class="text-center mb-4">Recommended for You</h2>
+        {% if recommendations %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for book in recommendations %}
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <img src="{{ book.cover_image or '/static/images/default_cover.png' }}" class="card-img-top" alt="{{ book.title }} Cover">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{{ url_for('book_details', book_id=book.id) }}" class="text-decoration-none">{{ book.title }}</a>
+                        </h5>
+                        <a href="{{ url_for('author_profile', author_id=book.author.id) }}" class="text-decoration-none">{{ book.author.name }}</a>
+                        <p class="card-text">
+                            <span class="badge bg-secondary">{{ book.category.name }}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted text-center">No recommendations available. Start following categories or authors to see personalized suggestions!</p>
         {% endif %}
+    </section>
+    {% endif %}
 {% endblock content %}

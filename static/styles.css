@@ -1,4 +1,6 @@
+/* General Styling */
         body {
+            box-sizing: border-box;
             padding-top: 4.5rem;
             background-color: #f8f9fa;
         }
@@ -20,11 +22,11 @@
             border-radius: 0 20px 20px 0;
         }
         .flash-message {
-            margin: 10px auto;
-            padding: 10px;
+            margin: 5px auto;
+            padding: 5px;
             border-radius: 5px;
             text-align: center;
-            width: 90%;
+            width: 50%;
         }
         .flash-message.success {
             background-color: #d4edda;
@@ -34,3 +36,25 @@
             background-color: #f8d7da;
             color: #721c24;
         }
+
+/* Styles specific to error pages */
+.error-container {
+    text-align: center;
+    padding: 2rem;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.error-container h1 {
+    font-size: 4rem;
+    font-weight: bold;
+    color: #dc3545;
+}
+.error-container p {
+    font-size: 1.2rem;
+    margin-top: 1rem;
+}
+.btn-home {
+    margin-top: 1.5rem;
+}

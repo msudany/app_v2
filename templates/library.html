@@ -1,57 +1,79 @@
-{% extends "layout.html" %} {% block title %}Library{% endblock %} {% block content %}
+{% extends "layout.html" %}
+
+{% block title %}Library{% endblock %}
+
+{% block content %}
+    <div class="container my-5">
         {% for status in ['Currently Reading', 'Want to Read', 'Read'] %}
-        <section class="library-section">
-            <h2>{{ status }}</h2>
-            <div class="library-grid">
+        <section class="library-section mb-5">
+            <h2 class="text-primary mb-4">{{ status }}</h2>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                 {% for entry in progress if entry.status == status %}
-                <div class="library-item">
-                    <img src="{{ entry.book.cover_image or '/static/images/default_cover.png' }}" alt="{{ entry.book.title }} Cover">
-                    <h3><a href="{{ url_for('book_details', book_id=entry.book.id) }}">{{ entry.book.title }}</a></h3>
-                    <p><strong>Total Pages:</strong> {{ entry.book.pages }}</p>
-                    <p><strong>Pages Left:</strong> {{ entry.pages_left }}</p>
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <img src="{{ entry.book.cover_image or '/static/images/default_cover.png' }}" class="card-img-top" alt="{{ entry.book.title }} Cover">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{{ url_for('book_details', book_id=entry.book.id) }}" class="text-decoration-none">{{ entry.book.title }}</a>
+                            </h5>
+                            <p class="card-text"><strong>{{ entry.pages_left }}</strong> pages left of <strong>{{ entry.book.pages }}</strong></p>
 
-                    <!-- Progress Update Form -->
-                    {% if entry.status == 'Currently Reading' %}
-                    <form action="{{ url_for('library') }}" method="POST">
-                        <label for="pages_read_{{ entry.book.id }}">Pages Read:</label>
-                        <input type="hidden" name="book_id" value="{{ entry.book.id }}">
-                        <input type="number" id="pages_read_{{ entry.book.id }}" name="pages_read"
-                               min="0" max="{{ entry.book.pages }}" value="{{ entry.pages_read }}">
-                        <button type="submit" class="btn">Update Progress</button>
-                    </form>
-                    {% endif %}
-
-                    <!-- Completed Badge -->
-                    {% if entry.pages_read == entry.book.pages and entry.status == 'Currently Reading' %}
-                    <span class="badge completed" onclick="document.getElementById('move_to_read_{{ entry.book.id }}').submit();">
-                        Completed
-                    </span>
-                    <form id="move_to_read_{{ entry.book.id }}" action="{{ url_for('move_to_read', book_id=entry.book.id) }}" method="POST" style="display: none;">
-                        <input type="hidden" name="book_id" value="{{ entry.book.id }}">
-                    </form>
-                    {% endif %}
-
-                    <!-- Progress Bar -->
-                    <div class="progress-bar">
-                        <div class="progress" style="width: {{ (entry.pages_read / entry.book.pages) * 100 }}%;"></div>
-                    </div>
-
-                    <!-- Three-Dot Menu -->
-                    <div class="menu-container">
-                        <button class="menu-button">⋮</button>
-                        <div class="menu-dropdown">
-                            <form action="{{ url_for('add_to_library', book_id=entry.book.id) }}" method="POST">
-                                <input type="hidden" name="status" value="Currently Reading">
-                                <button type="submit" class="menu-item">Move to Currently Reading</button>
+                            <!-- Progress Update Form -->
+                            {% if entry.status == 'Currently Reading' %}
+                            <form action="{{ url_for('library') }}" method="POST" class="mt-3">
+                                <label for="pages_read_{{ entry.book.id }}" class="form-label">Pages Read:</label>
+                                <input type="hidden" name="book_id" value="{{ entry.book.id }}">
+                                <input type="number" id="pages_read_{{ entry.book.id }}" name="pages_read"
+                                       min="0" max="{{ entry.book.pages }}" value="{{ entry.pages_read }}" class="form-control mb-2">
+                                <button type="submit" class="btn btn-primary w-100">Update Progress</button>
                             </form>
-                            <form action="{{ url_for('add_to_library', book_id=entry.book.id) }}" method="POST">
-                                <input type="hidden" name="status" value="Want to Read">
-                                <button type="submit" class="menu-item">Move to Want to Read</button>
+                            {% endif %}
+
+                            <!-- Completed Badge -->
+                            {% if entry.pages_read == entry.book.pages and entry.status == 'Currently Reading' %}
+                            <span class="badge bg-success d-inline-block mt-3" style="cursor: pointer;" onclick="document.getElementById('move_to_read_{{ entry.book.id }}').submit();">
+                                Completed
+                            </span>
+                            <form id="move_to_read_{{ entry.book.id }}" action="{{ url_for('move_to_read', book_id=entry.book.id) }}" method="POST" style="display: none;">
+                                <input type="hidden" name="book_id" value="{{ entry.book.id }}">
                             </form>
-                            <form action="{{ url_for('add_to_library', book_id=entry.book.id) }}" method="POST">
-                                <input type="hidden" name="status" value="Read">
-                                <button type="submit" class="menu-item">Move to Read</button>
-                            </form>
+                            {% endif %}
+
+                            <!-- Progress Bar -->
+                            <div class="progress mt-3" style="height: 20px;">
+                                <div class="progress-bar" role="progressbar" style="width: {{ (entry.pages_read / entry.book.pages) * 100 }}%;" aria-valuenow="{{ (entry.pages_read / entry.book.pages) * 100 }}" aria-valuemin="0" aria-valuemax="100">
+                                    {{ (entry.pages_read / entry.book.pages) | round(1) }}%
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Three-Dot Menu -->
+                        <div class="card-footer bg-light d-flex justify-content-between align-items-center">
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="menuDropdown{{ entry.book.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Manage
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="menuDropdown{{ entry.book.id }}">
+                                    <li>
+                                        <form action="{{ url_for('add_to_library', book_id=entry.book.id) }}" method="POST">
+                                            <input type="hidden" name="status" value="Currently Reading">
+                                            <button type="submit" class="dropdown-item">Move to Currently Reading</button>
+                                        </form>
+                                    </li>
+                                    <li>
+                                        <form action="{{ url_for('add_to_library', book_id=entry.book.id) }}" method="POST">
+                                            <input type="hidden" name="status" value="Want to Read">
+                                            <button type="submit" class="dropdown-item">Move to Want to Read</button>
+                                        </form>
+                                    </li>
+                                    <li>
+                                        <form action="{{ url_for('add_to_library', book_id=entry.book.id) }}" method="POST">
+                                            <input type="hidden" name="status" value="Read">
+                                            <button type="submit" class="dropdown-item">Move to Read</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -59,4 +81,5 @@
             </div>
         </section>
         {% endfor %}
+    </div>
 {% endblock content %}
