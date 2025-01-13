@@ -357,4 +357,5 @@ def browse():
 @app.route('/authors')
 def authors():
     authors = Author.query.all()  # Ensure this retrieves authors
+    print(authors)
     return render_template('authors.html', authors=authors)

@@ -45,7 +45,7 @@
                 <ul>
                     {% for book in books %}
                         <li>
-                            <strong><a href="{{ url_for('book_details', book_id=book.id) }}">{{ book.title }}</a></strong> by {{ book.author }}
+                            <strong><a href="{{ url_for('book_details', book_id=book.id) }}">{{ book.title }}</a></strong> by {{ book.author.name }}
                             <p>Rating: {{ book.rating }}</p>
                             <p>Categories:
                                 {% for category in book.categories %}
@@ -63,7 +63,7 @@
             {% if authors %}
                 <ul>
                     {% for author in authors %}
-                        <li><a href="{{ url_for('search', q=author.author) }}">{{ author.author }}</a></li>
+                        <li><a href="{{ url_for('author_profile', author_id=author.id) }}">{{ author.name }}</a></li>
                     {% endfor %}
                 </ul>
             {% else %}

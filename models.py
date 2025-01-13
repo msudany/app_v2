@@ -59,7 +59,7 @@ class User(UserMixin, db.Model):
         'User', secondary=followers,
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
-        backref=db.backref('user_followers', lazy='dynamic'), lazy='dynamic'
+        backref=db.backref('followers', lazy='dynamic'), lazy='dynamic'
     )
 
     # Relationship with categories
@@ -125,6 +125,7 @@ class Author(db.Model):
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
+    author = db.relationship('Author', backref='written_books', lazy=True)  # Add this relationship
     author_id = db.Column(db.Integer, db.ForeignKey('author.id'), nullable=False)
     categories = db.relationship(
         'Category', secondary=book_category,

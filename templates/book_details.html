@@ -5,7 +5,7 @@
             </div>
             <div class="book-info">
                 <h2>{{ book.title }}</h2>
-                <p><strong>Author:</strong> {{ book.author }}</p>
+                <p><strong>Author:</strong> {{ book.author.name }}</p>
                 <p><strong>Categories:</strong>
                     {% for category in book.categories %}
                         {{ category.name }}{% if not loop.last %}, {% endif %}

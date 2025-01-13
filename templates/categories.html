@@ -18,7 +18,7 @@
                         <div class="book-item">
                             <img src="{{ book.cover_image or '/static/images/default_cover.png' }}" alt="{{ book.title }} Cover">
                             <h3><a href="{{ url_for('book_details', book_id=book.id) }}">{{ book.title }}</a></h3>
-                            <p><strong>Author:</strong> {{ book.author }}</p>
+                            <p><strong>Author:</strong> {{ book.author.name }}</p>
                             <p><strong>Rating:</strong> {{ book.rating }}/5</p>
                         </div>
                     </li>
