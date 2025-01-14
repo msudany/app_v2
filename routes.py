@@ -1,11 +1,13 @@
 import os
+from crypt import methods
 
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from werkzeug.security import generate_password_hash
 from werkzeug.utils import secure_filename
 
 from models import db, Book, Review, ReadingProgress, User, Category, book_category, Author
+from recommendations import recommend_books
 from run import app
 
 UPLOAD_FOLDER = 'static/uploads'
@@ -18,9 +20,37 @@ def allowed_file(filename):
 # Home Route
 @app.route('/')
 def home():
-    books = Book.query.all()
+    page = request.args.get('page', type=int, default=1)
+    per_page = 10  # Number of books to load per page
+    books = Book.query.paginate(page=page, per_page=per_page, error_out=False)
+    categories = Category.query.all()  # Fetch all categories for potential filters
+    return render_template('home.html', books=books.items, categories=categories, has_next=books.has_next)
 
-    return render_template('home.html', books=books)
+# fetching additional books as JSON
+@app.route('/load_books', methods=['GET'])
+def load_books():
+    page = request.args.get('page', type=int, default=1)
+    per_page = 10
+    books = Book.query.paginate(page=page, per_page=per_page, error_out=False)
+
+    books_data = [
+        {
+            "id": book.id,
+            "title": book.title,
+            "author": {
+                "id": book.author.id,
+                "name": book.author.name
+            },
+            "cover_image": book.cover_image or '/static/images/default_cover.png',
+            "categories": [category.name for category in book.categories]
+        } for book in books.items
+    ]
+
+    return jsonify({
+        "books": books_data,
+        "has_next": books.has_next
+    })
+
 
 # Book Details
 @app.route('/book/<int:book_id>')
@@ -77,9 +107,8 @@ def review(book_id):
         db.session.add(new_review)
         flash('Your review has been added!', 'success')
 
-    db.session.commit()
+    db.session.commit()  # Commit the main transaction, including updated book ratings
     return redirect(url_for('book_details', book_id=book_id))
-
 
 # Library Route
 @app.route('/library', methods=['GET', 'POST'])
@@ -166,6 +195,7 @@ def profile():
 
 # View Other Users' Profiles Route
 @app.route('/user/<int:user_id>')
+@login_required
 def view_user(user_id):
     user = User.query.get_or_404(user_id)
     library = ReadingProgress.query.filter_by(user_id=user.id).all()
@@ -332,6 +362,38 @@ def categories():
         followed_categories=followed_categories
     )
 
+@app.route('/category_books/<int:category_id>', methods=['GET'])
+def category_books(category_id):
+    # Get the category and validate it exists
+    category = Category.query.get_or_404(category_id)
+
+    # Pagination parameters
+    page = request.args.get('page', type=int, default=1)
+    per_page = 3  # Number of books per category to load
+
+    # Paginated query for books in the category
+    books_query = Book.query.filter(
+        Book.categories.any(id=category.id)
+    ).paginate(page=page, per_page=per_page, error_out=False)
+
+    # Serialize book data to send as JSON
+    books_data = [
+        {
+            "id": book.id,
+            "title": book.title,
+            "author": {
+                "id": book.author.id,
+                "name": book.author.name
+            },
+            "cover_image": book.cover_image or '/static/images/default_cover.png',
+            "rating": book.rating
+        } for book in books_query.items
+    ]
+
+    return jsonify({
+        "books": books_data,
+        "has_next": books_query.has_next  # Indicates if there are more books to load
+    })
 
 # Following a Category Route
 @app.route('/follow_category/<int:category_id>', methods=['POST'])
@@ -350,6 +412,31 @@ def follow_category(category_id):
     # Redirect back to the specific category with an anchor tag
     return redirect(url_for('categories'))
 
-@app.route('/browse')
+@app.route('/browse', methods=['GET'])
+@login_required
+@login_required
 def browse():
-    return render_template('home.html')
+    page = request.args.get('page', type=int, default=1)
+    per_page = 10
+
+    try:
+        recommended_books = recommend_books(current_user, page=page, per_page=per_page)
+        print(f"Recommended Books for Page {page}: {[book.title for book in recommended_books.items]}")
+    except Exception as e:
+        print(f"Error generating recommendations: {e}")
+        recommended_books = None
+
+    return render_template(
+        'browse.html',
+        books=recommended_books.items if recommended_books else [],
+        has_next=recommended_books.has_next if recommended_books else False
+    )
+
+
+
+# Debugging
+@app.route('/verify_users')
+def verify_users():
+    users = User.query.all()
+    user_data = [(user.username, user.email) for user in users]
+    return {"users": user_data}

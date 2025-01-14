@@ -1,3 +1,5 @@
+import time
+
 from flask import Flask
 from extensions import db, login_manager
 
@@ -19,9 +21,15 @@ from auth import *
 # Create tables and seed data
 @app.before_request
 def initialize_database():
+    # The following line will remove this handler, making it
+    # only run on the first request
+    app.before_request_funcs[None].remove(initialize_database)
     db.create_all()
     from seed import seed_data
+    start_time = time.time()
     seed_data()
+    end_time = time.time()
+    print(f"Seeding completed in {end_time - start_time:.2f} seconds.")
 
 # Error Handlers
 @app.errorhandler(404)

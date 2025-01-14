@@ -1,119 +1,131 @@
-from werkzeug.security import generate_password_hash
-from models import db, User, Book, Category, Author
-from run import app
+import csv
 
+from sqlalchemy import insert
+from werkzeug.security import generate_password_hash
+
+import models
+from models import User, Author, Book, Category, Review, book_category
+from extensions import db
 
 def seed_data():
-    # Seed Users
-    if not User.query.filter_by(username="reader1").first():
-        reader1 = User(
-            username="reader1",
-            email="reader1@example.com",
-            password=generate_password_hash("password", method='pbkdf2:sha256'),
-        )
-        db.session.add(reader1)
+    # Define the paths to the CSV files
+    csv_files = {
+        "users": "static/processed_data/user(1).csv",
+        "authors": "static/processed_data/author(1).csv",
+        "books": "static/processed_data/book_final.csv",
+        "categories": "static/processed_data/category(1).csv",
+        "book_categories": "static/processed_data/book_category(1).csv",
+        "reviews": "static/processed_data/Cleaned_Reviews_with_Integer_Book_IDs.csv"
+    }
 
-    if not User.query.filter_by(username="reader2").first():
-        reader2 = User(
-            username="reader2",
-            email="reader2@example.com",
-            password=generate_password_hash("password", method='pbkdf2:sha256'),
-        )
-        db.session.add(reader2)
+    try:
+        # # Seed Users
+        # with open(csv_files["users"], 'r') as file:
+        #     reader = csv.DictReader(file)
+        #     users = []
+        #     for row in reader:
+        #         existing_user = User.query.filter_by(email=row['email']).first()
+        #         if existing_user:
+        #             continue
+        #
+        #         user = User(
+        #             id=int(row['id']),
+        #             username=row['username'],
+        #             email=row['email'],
+        #             # password=generate_password_hash("password", method="pbkdf2:sha256"), # Use a hashed password in production
+        #             password="password",
+        #             profile_preferences=row['profile_preferences'],
+        #             display_name=row['display_name'] if row['display_name'] else "Anonymous User",
+        #             bio=row['bio'],
+        #             gender=row['gender'],
+        #             age=int(float(row['age'])) if row['age'] else None,
+        #             location=row['location'],
+        #             profile_pic=row['profile_pic'] if row['profile_pic'] else "/static/images/default_profile.png"
+        #         )
+        #         users.append(user)
+        #     db.session.bulk_save_objects(users)
 
-    if not User.query.filter_by(username="reader2").first():
-        reader2 = User(
-            username="reader2",
-            email="reader2@example.com",
-            password=generate_password_hash("password", method='pbkdf2:sha256'),
-        )
-        db.session.add(reader2)
+        # # Seed Authors
+        # with open(csv_files["authors"], 'r') as file:
+        #     reader = csv.DictReader(file)
+        #     authors = []
+        #     for row in reader:
+        #         author = Author(
+        #             id=int(row['id']),
+        #             name=row['name'],
+        #             bio=row['bio'],
+        #             # profile_pic=row['profile_pic']
+        #             profile_pic="/static/images/default_profile.png"
+        #         )
+        #         authors.append(author)
+        #     db.session.bulk_save_objects(authors)
 
-    if not User.query.filter_by(username="reader3").first():
-        reader2 = User(
-            username="reader3",
-            email="reader3@example.com",
-            password=generate_password_hash("password", method='pbkdf2:sha256'),
-        )
-        db.session.add(reader2)
+        # # Seed Books
+        # with open(csv_files["books"], 'r') as file:
+        #     reader = csv.DictReader(file)
+        #     books = []
+        #     for row in reader:
+        #
+        #         book = Book(
+        #             id=int(row['id']),
+        #             title=row['title'],
+        #             author_id=int(row['author_id']),
+        #             summary=row['summary'],
+        #             pages=int(float(row['pages'])) if row['pages'] else 300,
+        #             rating=int(float(row['rating'])) if row['rating'] else 0,
+        #             cover_image=row['cover_image']
+        #         )
+        #         books.append(book)
+        #     db.session.bulk_save_objects(books)
 
-        # Seed Categories
-        category_names = ["Fiction", "Romance", "Thriller", "Mystery", "Science Fiction", "Fantasy"]
-        category_objects = {}
+        # # Seed Categories
+        # with open(csv_files["categories"], 'r') as file:
+        #     reader = csv.DictReader(file)
+        #     categories = []
+        #     for row in reader:
+        #
+        #         category = Category(
+        #             id=int(row['id']),
+        #             name=row['name']
+        #         )
+        #         categories.append(category)
+        #     db.session.bulk_save_objects(categories)
+        #
+        # # Seed Book-Category Relationships
+        # with open(csv_files["book_categories"], 'r') as file:
+        #     reader = csv.DictReader(file)
+        #     book_categories = []
+        #     for row in reader:
+        #         book_category = {
+        #             "book_id": int(row['book_id']),
+        #             "category_id": int(row['category_id'])
+        #         }
+        #         book_categories.append(book_category)
+        #
+        #     # Use SQLAlchemy's insert() to bulk insert the data
+        #     if book_categories:
+        #         db.session.execute(insert(models.book_category).values(book_categories))
+        #         db.session.commit()  # Commit the transaction
 
-        for name in category_names:
-            category = Category.query.filter_by(name=name).first()
-            if not category:
-                category = Category(name=name)
-                db.session.add(category)
-            category_objects[name] = category
-
-        # Commit categories
-        db.session.commit()
-
-        # Seed Authors
-        authors_data = [
-            {"name": "Author One", "bio": "A prolific writer of fiction.",
-             "profile_pic": "/static/images/author_one.png"},
-            {"name": "Author Two", "bio": "Known for thrilling tales.", "profile_pic": "/static/images/author_two.png"},
-            {"name": "Author Three", "bio": "A celebrated mystery novelist.",
-             "profile_pic": "/static/images/author_three.png"}
-        ]
-
-        author_objects = {}
-        for author_data in authors_data:
-            author = Author.query.filter_by(name=author_data["name"]).first()
-            if not author:
-                author = Author(**author_data)
-                db.session.add(author)
-            author_objects[author.name] = author
-
-        # Commit authors
-        db.session.commit()
-
-        # Seed Books
-        books_data = [
-            {
-                "title": "Book One",
-                "author_name": "Author One",
-                "summary": "A fascinating fiction book.",
-                "pages": 300,
-                "categories": ["Fiction", "Romance"],
-                "cover_image": "http://images.amazon.com/images/P/0195153448.01.LZZZZZZZ.jpg"
-            },
-            {
-                "title": "Book Two",
-                "author_name": "Author Two",
-                "summary": "An edge-of-your-seat thriller.",
-                "pages": 250,
-                "categories": ["Thriller", "Mystery"],
-                "cover_image": "http://images.amazon.com/images/P/1234567890.01.LZZZZZZZ.jpg"
-            },
-            {
-                "title": "Book Three",
-                "author_name": "Author Three",
-                "summary": "A captivating mystery novel.",
-                "pages": 400,
-                "categories": ["Mystery", "Fiction"],
-                "cover_image": "http://images.amazon.com/images/P/9876543210.01.LZZZZZZZ.jpg"
-            }
-        ]
-
-        for book_data in books_data:
-            # Check if the book already exists
-            book = Book.query.filter_by(title=book_data["title"]).first()
-            if not book:
-                book = Book(
-                    title=book_data["title"],
-                    author_id=author_objects[book_data["author_name"]].id,
-                    summary=book_data["summary"],
-                    pages=book_data["pages"],
-                    cover_image=book_data["cover_image"]
+        # Seed Reviews
+        with open(csv_files["reviews"], 'r') as file:
+            reader = csv.DictReader(file)
+            reviews = []
+            for row in reader:
+                review = Review(
+                    id=int(row['id']),
+                    content=row['content'],
+                    rating=int(row['rating']) if row['rating'] else 2,
+                    user_id=int(row['user_id']),
+                    book_id=int(row['book_id'])
                 )
-                # Add categories to the book
-                for category_name in book_data["categories"]:
-                    book.categories.append(category_objects[category_name])
+                reviews.append(review)
+            db.session.bulk_save_objects(reviews)
 
-                db.session.add(book)
-    # Commit all changes
-    db.session.commit()
+        # Commit all changes
+        db.session.commit()
+        print("All data successfully seeded into the database.")
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error occurred: {e}")

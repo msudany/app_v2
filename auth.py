@@ -17,7 +17,8 @@ def register():
     if request.method == 'POST':
         username = request.form.get('username')
         email = request.form.get('email')
-        password = generate_password_hash(request.form.get('password'), method='pbkdf2:sha256')
+        # password = generate_password_hash(request.form.get('password'), method='pbkdf2:sha256')
+        password = request.form.get('password')
         display_name = request.form.get('display_name')
         bio = request.form.get('bio')
         gender = request.form.get('gender') if request.form.get('gender') else None
@@ -64,7 +65,8 @@ def login():
         email = request.form['email']
         password = request.form['password']
         user = User.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password, password):
+        # if user and check_password_hash(user.password, password):
+        if user and user.password == password:
             login_user(user)
             flash('Login successful!', 'success')
             return redirect(url_for('home'))

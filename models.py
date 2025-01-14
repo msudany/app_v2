@@ -38,7 +38,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
     profile_preferences = db.Column(db.Text)
-    display_name = db.Column(db.String(150), nullable=True)
+    display_name = db.Column(db.String(150), nullable=False, default="Anonymous")
     bio = db.Column(db.Text, nullable=True)
     gender = db.Column(db.String(20), nullable=True)
     age = db.Column(db.Integer, nullable=True)
@@ -112,8 +112,8 @@ class Author(db.Model):
     bio = db.Column(db.Text, nullable=True)
     profile_pic = db.Column(db.String(250), nullable=False, default="/static/images/default_author.png")
 
-    # Books written by the author
-    books = db.relationship('Book', backref='author_obj', lazy=True)
+    # One-to-Many relationship with books
+    books = db.relationship("Book", back_populates="author")
 
     # Users who follow this author
     followers = db.relationship(
@@ -127,8 +127,10 @@ class Author(db.Model):
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
-    author = db.relationship('Author', backref='written_books', lazy=True)  # Add this relationship
-    author_id = db.Column(db.Integer, db.ForeignKey('author.id'), nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('author.id'))
+
+    # Many-to-One relationship with authors
+    author = db.relationship("Author", back_populates="books")
     categories = db.relationship(
         'Category', secondary=book_category,
         backref=db.backref('books', lazy='dynamic')
@@ -136,10 +138,16 @@ class Book(db.Model):
     summary = db.Column(db.Text)
     pages = db.Column(db.Integer)
     reviews = db.relationship('Review', backref='book', lazy=True)
-    rating = db.Column(db.Float, default=0)
-    cover_image = db.Column(db.String(250),
-                            nullable=False,
-                            default="/static/images/default_cover.png")  # URL for the book cover image
+    rating = db.Column(db.Float, default=0)  # Average rating, default to 0
+    cover_image = db.Column(db.String(250), nullable=False, default="/static/images/default_cover.png")
+
+    def calculate_rating(self):
+        """Calculate and update the average rating of the book."""
+        if self.reviews:
+            total_rating = sum(review.rating for review in self.reviews)
+            self.rating = total_rating / len(self.reviews)
+        else:
+            self.rating = 0
 
 # Review Model
 class Review(db.Model):
@@ -148,6 +156,34 @@ class Review(db.Model):
     rating = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+
+    @staticmethod
+    def after_insert(mapper, connection, target):
+        """Recalculate the book's rating after a review is added."""
+        book = Book.query.get(target.book_id)
+        if book:
+            book.calculate_rating()
+
+    @staticmethod
+    def after_update(mapper, connection, target):
+        """Recalculate the book's rating after a review is updated."""
+        book = Book.query.get(target.book_id)
+        if book:
+            book.calculate_rating()
+
+    @staticmethod
+    def after_delete(mapper, connection, target):
+        """Recalculate the book's rating after a review is deleted."""
+        book = Book.query.get(target.book_id)
+        if book:
+            book.calculate_rating()
+
+
+# Event listeners for automatic rating updates
+from sqlalchemy import event
+event.listen(Review, 'after_insert', Review.after_insert)
+event.listen(Review, 'after_update', Review.after_update)
+event.listen(Review, 'after_delete', Review.after_delete)
 
 # Reading Progress Model
 class ReadingProgress(db.Model):
@@ -161,23 +197,3 @@ class ReadingProgress(db.Model):
     @property
     def pages_left(self):
         return max(self.book.pages - self.pages_read, 0) if self.book else 0
-
-
-# Report Model
-class Report(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    reporter_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    reported_id = db.Column(db.Integer, nullable=False)  # Can represent User, Book, or Review
-    report_type = db.Column(db.String(50))  # 'User', 'Book', 'Review'
-    reason = db.Column(db.Text, nullable=False)
-
-# Publishing Request Model
-class PublishingRequest(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    book_title = db.Column(db.String(150), nullable=False)
-    book_summary = db.Column(db.Text, nullable=False)
-    book_category = db.Column(db.String(100))
-    book_pages = db.Column(db.Integer)
-    status = db.Column(db.String(50), default='Pending')
-

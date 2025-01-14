@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+{% block title %}Browse Recommendations{% endblock %}
+{% block content %}
+<div class="container my-5">
+    <h1>Recommended Books</h1>
+    <div id="book-list" class="row">
+        {% if books %}
+            {% for book in books %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="{{ book.cover_image or '/static/images/default_cover.png' }}" alt="{{ book.title }} Cover" class="card-img-top">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{{ url_for('book_details', book_id=book.id) }}" class="text-decoration-none">{{ book.title }}</a>
+                        </h5>
+                        <p class="card-text"><strong>Author:</strong> {{ book.author.name }}</p>
+                        <p class="card-text"><strong>Rating:</strong> {{ book.rating }}/5</p>
+                        <p class="card-text">
+                            {% for category in book.categories %}
+                            <span class="badge bg-primary">{{ category.name }}</span>
+                            {% endfor %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted">No recommendations available at this time.</p>
+        {% endif %}
+    </div>
+
+    {% if has_next %}
+    <div id="load-more" class="text-center my-4">
+        <button id="load-more-btn" class="btn btn-primary">Load More</button>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let page = 2;
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    const bookList = document.getElementById('book-list');
+    const loadMoreContainer = document.getElementById('load-more');
+
+    loadMoreBtn.addEventListener('click', () => {
+        fetch(`/browse?page=${page}&ajax=1`)
+            .then(response => response.json())
+            .then(data => {
+                data.books.forEach(book => {
+                    const bookCard = `
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <img src="${book.cover_image}" alt="${book.title} Cover" class="card-img-top">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <a href="/book/${book.id}" class="text-decoration-none">${book.title}</a>
+                                    </h5>
+                                    <p class="card-text"><strong>Author:</strong> ${book.author.name}</p>
+                                    <p class="card-text"><strong>Rating:</strong> ${book.rating}/5</p>
+                                    <p class="card-text">
+                                        ${book.categories.map(category => `<span class="badge bg-primary">${category}</span>`).join(' ')}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>`;
+                    bookList.insertAdjacentHTML('beforeend', bookCard);
+                });
+
+                if (!data.has_next) {
+                    loadMoreContainer.style.display = 'none';
+                }
+
+                page++;
+            })
+            .catch(error => console.error('Error fetching more books:', error));
+    });
+</script>
+{% endblock %}

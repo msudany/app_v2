@@ -18,26 +18,32 @@
         </div>
 
         <!-- Category Books -->
-        <div class="category-item row mb-5" id="category-{{ category.id }}">
-            {% if category.books %}
-                {% for book in category.books %}
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 shadow-sm">
-                        <img src="{{ book.cover_image or '/static/images/default_cover.png' }}" alt="{{ book.title }} Cover" class="card-img-top">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <a href="{{ url_for('book_details', book_id=book.id) }}" class="text-decoration-none">{{ book.title }}</a>
-                            </h5>
-                            <p class="card-text"><strong>Author:</strong> {{ book.author.name }}</p>
-                            <p class="card-text"><strong>Rating:</strong> {{ book.rating }}/5</p>
-                        </div>
+        <div class="category-item row mb-3" id="category-{{ category.id }}">
+            <!-- Initially load the first 3 books -->
+            {% for book in category.books[:3] %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="{{ book.cover_image or '/static/images/default_cover.png' }}" alt="{{ book.title }} Cover" class="card-img-top">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{{ url_for('book_details', book_id=book.id) }}" class="text-decoration-none">{{ book.title }}</a>
+                        </h5>
+                        <p class="card-text"><strong>Author:</strong> {{ book.author.name }}</p>
+                        <p class="card-text"><strong>Rating:</strong> {{ book.rating }}/5</p>
                     </div>
                 </div>
-                {% endfor %}
-            {% else %}
-                <p class="text-muted">No books available for this category.</p>
-            {% endif %}
+            </div>
+            {% endfor %}
         </div>
+
+        <!-- Load More Button -->
+        {% if category.books.count() > 5 %}
+            <div class="text-center mb-5">
+                <button class="btn btn-primary load-more" data-category-id="{{ category.id }}" data-page="2">Load More</button>
+            </div>
+        {% endif %}
         {% endfor %}
     </section>
+
+    <script src="/static/load_more.js"></script>
 {% endblock content %}

@@ -20,7 +20,7 @@
                     {% endfor %}
                 </p>
                 <p><strong>Pages:</strong> {{ book.pages }}</p>
-                <p><strong>Rating:</strong> {{ book.rating }}/5</p>
+                <p><strong>Rating:</strong> {{ book.rating }}/10</p>
                 <p><strong>Summary:</strong></p>
                 <p>{{ book.summary }}</p>
             </div>
@@ -56,7 +56,7 @@
                     <li class="list-group-item">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span><strong>{{ review.user_display_name }}</strong></span>
-                            <span><strong>Rated:</strong> {{ review.rating }}/5</span>
+                            <span><strong>Rated:</strong> {{ review.rating }}/10</span>
                         </div>
                         <p>{{ review.content }}</p>
                     </li>
@@ -73,8 +73,8 @@
         <h2>Add a Review</h2>
         <form action="{{ url_for('review', book_id=book.id) }}" method="POST" class="needs-validation" novalidate>
             <div class="mb-3">
-                <label for="rating" class="form-label">Rating (1-5):</label>
-                <input type="number" id="rating" name="rating" min="1" max="5" class="form-control" required>
+                <label for="rating" class="form-label">Rating (1-10):</label>
+                <input type="number" id="rating" name="rating" min="1" max="10" class="form-control" required>
             </div>
             <div class="mb-3">
                 <label for="content" class="form-label">Your Review:</label>
@@ -88,8 +88,8 @@
         <h2>Edit Your Review</h2>
         <form action="{{ url_for('review', book_id=book.id) }}" method="POST" class="needs-validation" novalidate>
             <div class="mb-3">
-                <label for="rating" class="form-label">Rating (1-5):</label>
-                <input type="number" id="rating" name="rating" min="1" max="5" value="{{ user_review.rating }}" class="form-control" required>
+                <label for="rating" class="form-label">Rating (1-10):</label>
+                <input type="number" id="rating" name="rating" min="1" max="10" value="{{ user_review.rating }}" class="form-control" required>
             </div>
             <div class="mb-3">
                 <label for="content" class="form-label">Your Review:</label>
